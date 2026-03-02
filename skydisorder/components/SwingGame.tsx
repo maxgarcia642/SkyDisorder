@@ -2,19 +2,8 @@
 
 import { useChaosStore } from '@/lib/chaosStore';
 import { formatMoney } from '@/lib/utils';
+import { calcPowerScore, calcAccuracyScore } from '@/lib/chaosStore';
 import PowerMeter from './PowerMeter';
-
-function calcPowerScore(power: number): number {
-  if (power >= 45 && power <= 55) return 100;
-  const dist = power < 45 ? 45 - power : power - 55;
-  return Math.max(0, 100 - dist * 2.5);
-}
-
-function calcAccuracyScore(accuracy: number): number {
-  if (accuracy >= 45 && accuracy <= 55) return 100;
-  const dist = accuracy < 45 ? 45 - accuracy : accuracy - 55;
-  return Math.max(0, 100 - dist * 2.5);
-}
 
 function shotLabel(total: number): string {
   if (total >= 190) return 'HOLE IN ONE!';
@@ -24,6 +13,7 @@ function shotLabel(total: number): string {
 
 export default function SwingGame() {
   const swing = useChaosStore((s) => s.swing);
+  const lastEarnings = useChaosStore((s) => s.lastEarnings);
   const setPower = useChaosStore((s) => s.setPower);
   const setAccuracy = useChaosStore((s) => s.setAccuracy);
   const completeSwing = useChaosStore((s) => s.completeSwing);
@@ -34,7 +24,6 @@ export default function SwingGame() {
   const powerScore = Math.round(calcPowerScore(swing.power));
   const accuracyScore = Math.round(calcAccuracyScore(swing.accuracy));
   const total = powerScore + accuracyScore;
-  const money = Math.round(total * 2.5);
 
   return (
     <div className="swing-modal">
@@ -88,11 +77,8 @@ export default function SwingGame() {
             <p className="pixel-text" style={{ fontSize: 14, marginTop: 8 }}>
               Total: {total} pts
             </p>
-            <p
-              className="pixel-text"
-              style={{ color: '#ffd700', textShadow: '0 0 8px #ffd700', fontSize: 16, marginTop: 8 }}
-            >
-              Earned: {formatMoney(money)}
+            <p className="pixel-text" style={{ marginTop: 6, fontSize: 10, color: 'var(--text-dim)' }}>
+              (Earnings shown after swing completes)
             </p>
             <p
               className="pixel-text"
@@ -110,7 +96,7 @@ export default function SwingGame() {
               onClick={completeSwing}
               style={{ marginTop: 16 }}
             >
-              CONTINUE
+              CONTINUE → MINIGAME
             </button>
           </div>
         )}

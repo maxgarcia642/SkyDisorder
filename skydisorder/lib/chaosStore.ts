@@ -42,6 +42,43 @@ export type GameState = 'menu' | 'playing' | 'gameover' | 'leaderboard' | 'minig
 
 export type GameTheme = 'classic' | 'neon' | 'glitch' | 'matrix';
 
+export const MINIGAME_IDS = [
+  'coffee', 'tactical', 'radar', 'snake',
+  'numberguess', 'realorbot', 'mapfinder', 'plantwater',
+  'foodrush', 'debatejudge', 'codepuzzle', 'bowling',
+] as const;
+export type MinigameId = (typeof MINIGAME_IDS)[number];
+
+export const MINIGAME_DISPLAY_NAMES: Record<MinigameId, string> = {
+  coffee: 'Coffee Pour',
+  tactical: 'Tactical Strike',
+  radar: 'Taste Radar',
+  snake: 'Snake Dash',
+  numberguess: 'Number Guess',
+  realorbot: 'Real or Bot?',
+  mapfinder: 'Map Finder',
+  plantwater: 'Plant Water',
+  foodrush: 'Food Rush',
+  debatejudge: 'Debate Judge',
+  codepuzzle: 'Code Puzzle',
+  bowling: 'Bowling Strike',
+};
+
+export const MINIGAME_SOURCES: Record<MinigameId, string> = {
+  coffee: 'coffee-please-main',
+  tactical: 'modern-aw-game-main',
+  radar: 'TasteMap-main',
+  snake: 'native-stuff-main',
+  numberguess: 'native-stuff-main (NativeGame)',
+  realorbot: 'robotriffs-main',
+  mapfinder: 'maptiler-sdk-js-fork-main',
+  plantwater: 'lovefern-main',
+  foodrush: 'TasteMap-main',
+  debatejudge: 'verydebate-main',
+  codepuzzle: 'advent-of-code-main',
+  bowling: 'thoughtsonbowling-main',
+};
+
 interface SwingState {
   active: boolean;
   phase: 'power' | 'accuracy' | 'result';
@@ -56,8 +93,14 @@ interface ChaosStore {
   streak: number;
   partnerships: number;
   strikes: number;
-  currentMinigame: string | null;
+  maxStrikes: number;
+  currentMinigame: MinigameId | null;
   leaderboard: { name: string; score: number; money: number }[];
+  lastEarnings: number;
+  purchasedItems: Set<string>;
+  skipNextMinigame: boolean;
+  scoreMultiplier: number;
+  chaosBoost: boolean;
 
   sponsorMoney: number;
   totalScore: number;
@@ -73,6 +116,7 @@ interface ChaosStore {
   swing: SwingState;
   particles: { id: string; x: number; y: number; color: string }[];
 
+  hydrate: () => void;
   addMoney: (amount: number) => void;
   setRepos: (repos: Repo[]) => void;
   addRepo: (repo: Repo) => void;
@@ -83,6 +127,7 @@ interface ChaosStore {
   addMessage: (text: string) => void;
   setTheme: (theme: GameTheme) => void;
   setShowUploadModal: (show: boolean) => void;
+  purchaseItem: (itemId: string) => void;
 
   startSwing: (feature: RepoFeature) => void;
   setPower: (power: number) => void;
@@ -94,9 +139,9 @@ interface ChaosStore {
   clearParticles: () => void;
 
   setGameState: (state: GameState) => void;
-  setCurrentMinigame: (minigame: string | null) => void;
+  setCurrentMinigame: (minigame: MinigameId | null) => void;
   submitScore: (name: string) => void;
-  completeMinigame: (success: boolean, score: number) => void;
+  completeMinigame: (success: boolean, score?: number) => void;
   resetGame: () => void;
 }
 
@@ -112,26 +157,16 @@ const DEFAULT_SWING: SwingState = {
   score: 0,
 };
 
-function calcPowerScore(power: number): number {
+export function calcPowerScore(power: number): number {
   if (power >= 45 && power <= 55) return 100;
   const dist = power < 45 ? 45 - power : power - 55;
   return Math.max(0, 100 - dist * 2.5);
 }
 
-function calcAccuracyScore(accuracy: number): number {
+export function calcAccuracyScore(accuracy: number): number {
   if (accuracy >= 45 && accuracy <= 55) return 100;
   const dist = accuracy < 45 ? 45 - accuracy : accuracy - 55;
   return Math.max(0, 100 - dist * 2.5);
-}
-
-function loadPersisted<T>(key: string, fallback: T): T {
-  if (typeof window === 'undefined') return fallback;
-  try {
-    const raw = localStorage.getItem(key);
-    return raw !== null ? (JSON.parse(raw) as T) : fallback;
-  } catch {
-    return fallback;
-  }
 }
 
 function persist(key: string, value: unknown) {
@@ -150,12 +185,18 @@ export const useChaosStore = create<ChaosStore>((set, get) => ({
   streak: 0,
   partnerships: 0,
   strikes: 0,
+  maxStrikes: 3,
   currentMinigame: null,
   leaderboard: [],
+  purchasedItems: new Set<string>(),
+  skipNextMinigame: false,
+  scoreMultiplier: 1,
+  chaosBoost: false,
+  lastEarnings: 0,
 
-  sponsorMoney: loadPersisted('sky_sponsorMoney', 0),
+  sponsorMoney: 0,
   totalScore: 0,
-  chaosLevel: loadPersisted('sky_chaosLevel', 0),
+  chaosLevel: 0,
 
   repos: [],
   activeFeatures: [],
@@ -166,6 +207,38 @@ export const useChaosStore = create<ChaosStore>((set, get) => ({
   showUploadModal: false,
   swing: { ...DEFAULT_SWING },
   particles: [],
+
+  hydrate: () => {
+    if (typeof window === 'undefined') return;
+    try {
+      const money = localStorage.getItem('sky_sponsorMoney');
+      const chaos = localStorage.getItem('sky_chaosLevel');
+      const lb = localStorage.getItem('sky_leaderboard');
+      const items = localStorage.getItem('sky_purchasedItems');
+      set({
+        sponsorMoney: money !== null ? JSON.parse(money) : 0,
+        chaosLevel: chaos !== null ? JSON.parse(chaos) : 0,
+        leaderboard: lb !== null ? JSON.parse(lb) : [],
+        purchasedItems: items !== null ? new Set(JSON.parse(items)) : new Set<string>(),
+      });
+    } catch { /* ignore */ }
+  },
+
+  purchaseItem: (itemId) =>
+    set((s) => {
+      const next = new Set(s.purchasedItems);
+      next.add(itemId);
+      persist('sky_purchasedItems', [...next]);
+
+      const updates: Partial<ChaosStore> = { purchasedItems: next };
+
+      if (itemId === 'double_score') updates.scoreMultiplier = 2;
+      if (itemId === 'extra_strike') updates.maxStrikes = s.maxStrikes + 1;
+      if (itemId === 'skip_minigame') updates.skipNextMinigame = true;
+      if (itemId === 'chaos_boost') updates.chaosBoost = true;
+
+      return updates as ChaosStore;
+    }),
 
   addMoney: (amount) =>
     set((s) => {
@@ -238,7 +311,7 @@ export const useChaosStore = create<ChaosStore>((set, get) => ({
       let combined = [...s.activeFeatures, ...newActives];
       if (combined.length > 10) combined = combined.slice(combined.length - 10);
 
-      const moneyGain = 500 * count;
+      const moneyGain = 500 * count * (s.chaosBoost ? 3 : 1);
       const nextMoney = s.sponsorMoney + moneyGain;
       const nextChaos = s.chaosLevel + count;
       const nextTheme = randomItem(THEMES);
@@ -305,7 +378,7 @@ export const useChaosStore = create<ChaosStore>((set, get) => ({
     const { swing } = s;
     if (!swing.active || !swing.targetFeature) return;
 
-    const total = swing.score;
+    const total = Math.round(swing.score * s.scoreMultiplier);
     const isGoodHit = total > 150;
 
     let newStreak = s.streak;
@@ -313,28 +386,31 @@ export const useChaosStore = create<ChaosStore>((set, get) => ({
     let newStrikes = s.strikes;
     let moneyChange = 0;
     let messageText = '';
+    let nextMultiplier = 1;
 
     if (isGoodHit) {
       newStreak += 1;
       if (newStreak % 3 === 0) {
         newPartnerships += 1;
       }
-      moneyChange = total * 2.5 * (1 + newPartnerships * 0.1);
-      messageText = `Good hit! Streak: ${newStreak}`;
+      moneyChange = Math.round(total * 2.5 * (1 + newPartnerships * 0.1));
+      if (s.scoreMultiplier > 1) messageText = `BOOSTED hit! 2x Score! Streak: ${newStreak}`;
+      else messageText = `Good hit! Streak: ${newStreak}`;
     } else {
       newStreak = 0;
       moneyChange = -500;
       newStrikes += 1;
-      messageText = `Miss! The enemy is catching up! Strike ${newStrikes}/3`;
+      messageText = `Miss! The enemy is catching up! Strike ${newStrikes}/${s.maxStrikes}`;
     }
 
-    if (newStrikes >= 3) {
+    if (newStrikes >= s.maxStrikes) {
       set((prev) => ({
         ...prev,
         strikes: newStrikes,
         streak: newStreak,
         partnerships: newPartnerships,
         sponsorMoney: prev.sponsorMoney + moneyChange,
+        lastEarnings: moneyChange,
         gameState: 'gameover',
         swing: { ...DEFAULT_SWING },
         messages: [...prev.messages, makeMsg(messageText)].slice(-50),
@@ -364,7 +440,7 @@ export const useChaosStore = create<ChaosStore>((set, get) => ({
 
       const msgs: Message[] = [
         makeMsg(messageText),
-        makeMsg(`Swing complete! Score: ${total} | Earned/Lost $${moneyChange.toFixed(0)}`),
+        makeMsg(`Swing complete! Score: ${total} | Earned/Lost $${moneyChange}`),
       ];
       if (firstTime && repo) {
         msgs.push(makeMsg(`Hole #${repo.holeNumber} cleared!`));
@@ -377,19 +453,22 @@ export const useChaosStore = create<ChaosStore>((set, get) => ({
         color: randomItem(PARTICLE_COLORS),
       }));
 
-      const randomMinigame = randomItem(['coffee', 'tactical', 'radar', 'snake']);
+      const randomMinigame = randomItem([...MINIGAME_IDS]);
 
       return {
         streak: newStreak,
         partnerships: newPartnerships,
         strikes: newStrikes,
         sponsorMoney: nextMoney,
+        lastEarnings: moneyChange,
+        scoreMultiplier: nextMultiplier,
         chaosLevel: nextChaos,
         activeFeatures: nextActives,
         swing: { ...DEFAULT_SWING },
-        gameState: 'minigame',
-        currentMinigame: randomMinigame,
-        messages: [...prev.messages, ...msgs].slice(-50),
+        gameState: prev.skipNextMinigame ? 'playing' : 'minigame',
+        currentMinigame: prev.skipNextMinigame ? null : randomMinigame,
+        skipNextMinigame: false,
+        messages: [...prev.messages, ...msgs, ...(prev.skipNextMinigame ? [makeMsg('Auto-Win Token used! Minigame skipped.')] : [])].slice(-50),
         particles: [...prev.particles, ...pColors],
         repos: prev.repos.map((r) =>
           r.id === feature.repoId && firstTime
@@ -416,25 +495,51 @@ export const useChaosStore = create<ChaosStore>((set, get) => ({
 
   clearParticles: () => set({ particles: [] }),
 
-      setGameState: (state) => set({ gameState: state }),
-      resetGame: () => set({ sponsorMoney: 0, strikes: 0, streak: 0, partnerships: 0, totalScore: 0, currentHole: 0 }),
-      setCurrentMinigame: (minigame) => set({ currentMinigame: minigame }),
+  setGameState: (state) => set({ gameState: state }),
+
+  resetGame: () =>
+    set((s) => ({
+      sponsorMoney: 0,
+      strikes: 0,
+      maxStrikes: 3,
+      streak: 0,
+      partnerships: 0,
+      totalScore: 0,
+      currentHole: 1,
+      lastEarnings: 0,
+      scoreMultiplier: 1,
+      skipNextMinigame: false,
+      chaosBoost: false,
+      purchasedItems: new Set<string>(),
+      gameState: 'menu',
+      currentMinigame: null,
+      activeFeatures: [],
+      chaosLevel: 0,
+      messages: [],
+      swing: { ...DEFAULT_SWING },
+      particles: [],
+      repos: s.repos.map((r) => ({ ...r, played: false, score: 0 })),
+    })),
+
+  setCurrentMinigame: (minigame) => set({ currentMinigame: minigame }),
 
   submitScore: (name) =>
     set((s) => {
       const entry = { name, score: s.totalScore, money: s.sponsorMoney };
+      const newBoard = [...s.leaderboard, entry].sort((a, b) => b.score - a.score).slice(0, 10);
+      persist('sky_leaderboard', newBoard);
       return {
-        leaderboard: [...s.leaderboard, entry].sort((a, b) => b.score - a.score).slice(0, 10),
-        gameState: 'menu',
+        leaderboard: newBoard,
+        gameState: 'leaderboard',
       };
     }),
 
-  completeMinigame: (success, score) =>
+  completeMinigame: (success, score = 0) =>
     set((s) => {
-      let moneyChange = success ? score * 5 : -200;
+      const moneyChange = success ? score * 5 : -200;
       const nextMoney = s.sponsorMoney + moneyChange;
       persist('sky_sponsorMoney', nextMoney);
-      
+
       return {
         sponsorMoney: nextMoney,
         gameState: 'playing',

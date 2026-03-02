@@ -10,6 +10,7 @@ export function SponsorCounter() {
   const streak = useChaosStore((s) => s.streak);
   const partnerships = useChaosStore((s) => s.partnerships);
   const strikes = useChaosStore((s) => s.strikes);
+  const maxStrikes = useChaosStore((s) => s.maxStrikes);
   const [pop, setPop] = useState(false);
 
   useEffect(() => {
@@ -18,6 +19,9 @@ export function SponsorCounter() {
     const t = setTimeout(() => setPop(false), 300);
     return () => clearTimeout(t);
   }, [sponsorMoney]);
+
+  const chaosColor = chaosLevel < 5 ? 'var(--neon-green)' : chaosLevel < 15 ? 'var(--neon-yellow)' : chaosLevel < 30 ? 'var(--neon-red)' : 'var(--neon-pink)';
+  const streakGlow = streak >= 3 ? 'var(--gold)' : 'var(--neon-green)';
 
   return (
     <div className="sponsor-counter pixel-panel" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -30,16 +34,20 @@ export function SponsorCounter() {
       >
         {formatMoney(sponsorMoney)}
       </div>
-      <div style={{ display: 'flex', gap: '16px', fontSize: '11px', marginTop: '8px' }} className="pixel-text text-glow-cyan">
-        <span>Chaos Lvl: {chaosLevel}</span>
-        <span>Score: {totalScore}</span>
+      <div style={{ display: 'flex', gap: '16px', fontSize: '11px', marginTop: '8px' }} className="pixel-text">
+        <span style={{ color: chaosColor }}>Chaos Lvl: {chaosLevel}</span>
+        <span className="text-glow-cyan">Score: {totalScore}</span>
       </div>
-      <div style={{ display: 'flex', gap: '16px', fontSize: '11px', marginTop: '8px', color: 'var(--neon-green)' }} className="pixel-text">
-        <span>Streak: {streak} 🔥</span>
-        <span>Partners: {partnerships} 🤝</span>
+      <div style={{ display: 'flex', gap: '16px', fontSize: '11px', marginTop: '8px' }} className="pixel-text">
+        <span style={{ color: streakGlow, textShadow: streak >= 3 ? '0 0 8px var(--gold)' : 'none' }}>
+          Streak: {streak} {streak >= 3 ? '🔥🔥' : '🔥'}
+        </span>
+        <span style={{ color: 'var(--neon-green)' }}>Partners: {partnerships} 🤝</span>
       </div>
-      <div style={{ display: 'flex', gap: '16px', fontSize: '11px', marginTop: '8px', color: 'var(--neon-red)' }} className="pixel-text">
-        <span>Strikes: {'X'.repeat(strikes)}{'-'.repeat(3 - strikes)}</span>
+      <div style={{ display: 'flex', gap: '16px', fontSize: '11px', marginTop: '8px' }} className="pixel-text">
+        <span style={{ color: strikes >= maxStrikes - 1 ? 'var(--neon-red)' : 'var(--danger)' }}>
+          Strikes: {'X'.repeat(Math.min(strikes, maxStrikes))}{'-'.repeat(Math.max(0, maxStrikes - strikes))}
+        </span>
       </div>
     </div>
   );

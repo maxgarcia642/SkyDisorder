@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useChaosStore } from '@/lib/chaosStore';
+import { TAGLINE } from '@/lib/utils';
 
 export default function MainMenu() {
   const gameState = useChaosStore((state) => state.gameState);
@@ -11,39 +12,60 @@ export default function MainMenu() {
   if (gameState !== 'menu') return null;
 
   const handleStartGame = () => {
-    if (resetGame) resetGame();
+    resetGame();
     setGameState('playing');
   };
 
   return (
-    <div className="pixel-panel" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px', gap: '20px' }}>
-      <h1 style={{ color: 'var(--neon-pink)', fontSize: '48px', margin: '0 0 20px 0', textShadow: '2px 2px 0 var(--neon-blue)', textAlign: 'center' }}>
-        ARCADE MAYHEM
+    <div className="pixel-panel" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 30px', gap: '16px' }}>
+      <h1 style={{
+        color: 'var(--neon-yellow)', fontSize: 'clamp(28px, 5vw, 52px)', margin: '0',
+        textShadow: '3px 3px 0 var(--neon-pink), -1px -1px 0 var(--neon-blue), 0 0 20px var(--neon-yellow)',
+        textAlign: 'center', letterSpacing: '4px',
+      }}>
+        ⛳ SKYDISORDER ⛳
       </h1>
-      
-      <button 
-        className="pixel-panel" 
-        onClick={handleStartGame}
-        style={{ width: '250px', cursor: 'pointer', fontSize: '20px', color: 'var(--neon-green)', borderColor: 'var(--neon-green)' }}
-      >
-        START GAME
-      </button>
-      
-      <button 
-        className="pixel-panel" 
-        onClick={() => setGameState('minigame_menu')}
-        style={{ width: '250px', cursor: 'pointer', fontSize: '20px', color: 'var(--neon-blue)', borderColor: 'var(--neon-blue)' }}
-      >
-        MINIGAMES
-      </button>
-      
-      <button 
-        className="pixel-panel" 
-        onClick={() => setGameState('leaderboard')}
-        style={{ width: '250px', cursor: 'pointer', fontSize: '20px', color: 'var(--neon-yellow)', borderColor: 'var(--neon-yellow)' }}
-      >
-        LEADERBOARD
-      </button>
+
+      <p style={{
+        color: 'var(--text-dim)', fontSize: '9px', textAlign: 'center',
+        maxWidth: '400px', lineHeight: 1.8, fontFamily: 'var(--font-pixel)',
+      }}>
+        {TAGLINE}
+      </p>
+
+      <div style={{ width: '100%', maxWidth: 280, display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
+        <button className="pixel-panel" onClick={handleStartGame}
+          style={{ width: '100%', cursor: 'pointer', fontSize: '18px', color: 'var(--neon-green)', borderColor: 'var(--neon-green)', padding: '14px' }}>
+          START GAME
+        </button>
+
+        <button className="pixel-panel" onClick={() => setGameState('minigame_menu')}
+          style={{ width: '100%', cursor: 'pointer', fontSize: '18px', color: 'var(--neon-blue)', borderColor: 'var(--neon-blue)', padding: '14px' }}>
+          MINIGAMES (12)
+        </button>
+
+        <button className="pixel-panel" onClick={() => setGameState('leaderboard')}
+          style={{ width: '100%', cursor: 'pointer', fontSize: '18px', color: 'var(--neon-yellow)', borderColor: 'var(--neon-yellow)', padding: '14px' }}>
+          LEADERBOARD
+        </button>
+      </div>
+
+      <div style={{
+        marginTop: '16px', padding: '12px 16px', background: 'rgba(0,0,0,0.3)',
+        border: '1px solid var(--pixel-border)', borderRadius: '4px', maxWidth: 360,
+      }}>
+        <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '8px', color: 'var(--neon-cyan)', marginBottom: '6px' }}>
+          HOW TO PLAY
+        </div>
+        <div style={{ fontFamily: 'var(--font-system)', fontSize: '11px', color: 'var(--text-dim)', lineHeight: 1.6 }}>
+          Each repo is a golf hole. Click features to swing — nail the power and accuracy meters to earn sponsor money.
+          Every swing triggers a random minigame. Build streaks for partnerships. 3 strikes and you&apos;re out!
+        </div>
+      </div>
+
+      <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '8px', color: 'var(--text-dim)', marginTop: '8px', opacity: 0.5 }}>
+        v2.0 — {new Date().getFullYear()} — Maximum Chaos Edition
+      </div>
     </div>
   );
 }
