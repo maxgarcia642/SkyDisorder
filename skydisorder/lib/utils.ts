@@ -9,9 +9,8 @@ export function randomItem<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-export function formatMoney(cents: number): string {
-  const dollars = cents / 100;
-  return `$${dollars.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+export function formatMoney(amount: number): string {
+  return `$${amount.toLocaleString('en-US')}`;
 }
 
 const TAKEOVER_MESSAGES = [

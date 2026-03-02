@@ -205,7 +205,10 @@ function scanSingleRepo(dirPath: string, folderName: string, holeNumber: number)
   try {
     if (!isProjectDir(dirPath)) return null;
 
-    const repoId = `repo-${folderName.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`;
+    const slug = folderName.replace(/\s+/g, '-').toLowerCase();
+    let hash = 0;
+    for (let i = 0; i < slug.length; i++) hash = ((hash << 5) - hash + slug.charCodeAt(i)) | 0;
+    const repoId = `repo-${slug}-${Math.abs(hash).toString(36)}`;
     let name = folderName;
     let description = `Project: ${folderName}`;
     const techStack: string[] = [];

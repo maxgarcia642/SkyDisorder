@@ -10,12 +10,16 @@ interface RepoCardProps {
 
 export default function RepoCard({ repo }: RepoCardProps) {
   const startSwing = useChaosStore((s) => s.startSwing);
+  const visibleFeatures = repo.features.slice(0, 4);
+  const hiddenCount = repo.features.length - visibleFeatures.length;
 
   return (
     <div className={`repo-card${repo.played ? ' repo-card--played' : ''}`}>
       {repo.played && (
         <div className="repo-card-played-overlay">
-          <span className="played-badge pixel-text">PLAYED — {repo.score} pts</span>
+          <span className="played-badge pixel-text">
+            PLAYED — {repo.score} pts {repo.score > repo.par ? '(Over Par)' : repo.score < repo.par ? '(Under Par!)' : '(Par)'}
+          </span>
         </div>
       )}
 
@@ -47,7 +51,7 @@ export default function RepoCard({ repo }: RepoCardProps) {
 
       {repo.features.length > 0 && (
         <div className="repo-card-features">
-          {repo.features.slice(0, 4).map((feature) => (
+          {visibleFeatures.map((feature) => (
             <button
               key={feature.id}
               className="feature-btn pixel-text"
@@ -57,12 +61,13 @@ export default function RepoCard({ repo }: RepoCardProps) {
               <span className="feature-swing-label">SWING</span>
             </button>
           ))}
+          {hiddenCount > 0 && (
+            <div style={{ fontSize: '9px', color: 'var(--text-dim)', fontFamily: 'var(--font-pixel)', padding: '4px 0' }}>
+              +{hiddenCount} more feature{hiddenCount > 1 ? 's' : ''}
+            </div>
+          )}
         </div>
       )}
-
-      <div className="repo-card-footer pixel-text">
-        Hole {repo.holeNumber} · Par {repo.par}
-      </div>
     </div>
   );
 }

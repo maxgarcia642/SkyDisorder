@@ -2,11 +2,15 @@
 
 import React from 'react';
 import { useChaosStore } from '@/lib/chaosStore';
+import { formatMoney } from '@/lib/utils';
+
+const MEDALS = ['🥇', '🥈', '🥉'];
 
 export default function Leaderboard() {
   const gameState = useChaosStore((state) => state.gameState);
   const setGameState = useChaosStore((state) => state.setGameState);
-  const leaderboard = useChaosStore((state) => state.leaderboard || []);
+  const resetGame = useChaosStore((state) => state.resetGame);
+  const leaderboard = useChaosStore((state) => state.leaderboard);
 
   if (gameState !== 'leaderboard') return null;
 
@@ -18,24 +22,37 @@ export default function Leaderboard() {
 
       <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
         {leaderboard.length === 0 ? (
-          <div style={{ textAlign: 'center', color: '#888' }}>No scores yet</div>
+          <div style={{ textAlign: 'center', color: '#888' }}>No scores yet — go play!</div>
         ) : (
-          leaderboard.map((entry: any, index: number) => (
-            <div key={index} className="pixel-panel" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 20px', borderColor: '#444' }}>
-              <span style={{ color: 'var(--neon-blue)' }}>{index + 1}. {entry.name}</span>
-              <span style={{ color: 'var(--neon-green)' }}>${entry.score}</span>
+          leaderboard.map((entry: { name: string; score: number; money: number }, index: number) => (
+            <div key={index} className="pixel-panel" style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              padding: '10px 20px',
+              borderColor: index < 3 ? 'var(--gold)' : '#444',
+            }}>
+              <span style={{ color: 'var(--neon-blue)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: index < 3 ? '18px' : '12px' }}>{MEDALS[index] ?? `#${index + 1}`}</span>
+                {entry.name}
+              </span>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ color: 'var(--neon-green)', fontSize: '13px' }}>{entry.score} pts</div>
+                <div style={{ color: 'var(--gold)', fontSize: '10px' }}>{formatMoney(entry.money)}</div>
+              </div>
             </div>
           ))
         )}
       </div>
 
-      <button 
-        className="pixel-panel"
-        onClick={() => setGameState('menu')}
-        style={{ cursor: 'pointer', color: 'var(--neon-pink)', borderColor: 'var(--neon-pink)', padding: '10px 30px' }}
-      >
-        BACK TO MENU
-      </button>
+      <div style={{ display: 'flex', gap: '12px' }}>
+        <button className="pixel-panel" onClick={() => { resetGame(); setGameState('playing'); }}
+          style={{ cursor: 'pointer', color: 'var(--neon-green)', borderColor: 'var(--neon-green)', padding: '10px 24px' }}>
+          PLAY AGAIN
+        </button>
+        <button className="pixel-panel" onClick={() => setGameState('menu')}
+          style={{ cursor: 'pointer', color: 'var(--neon-pink)', borderColor: 'var(--neon-pink)', padding: '10px 24px' }}>
+          BACK TO MENU
+        </button>
+      </div>
     </div>
   );
 }

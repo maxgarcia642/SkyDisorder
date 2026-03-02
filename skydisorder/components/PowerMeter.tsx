@@ -11,6 +11,7 @@ interface PowerMeterProps {
 export default function PowerMeter({ type, onStop, active }: PowerMeterProps) {
   const [value, setValue] = useState(0);
   const [frozen, setFrozen] = useState(false);
+  const [flash, setFlash] = useState(false);
   const dirRef = useRef(1);
   const valueRef = useRef(0);
   const rafRef = useRef<number | null>(null);
@@ -46,6 +47,8 @@ export default function PowerMeter({ type, onStop, active }: PowerMeterProps) {
   const handleStop = useCallback(() => {
     if (frozen) return;
     setFrozen(true);
+    setFlash(true);
+    setTimeout(() => setFlash(false), 300);
     if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     onStop(Math.round(valueRef.current));
   }, [frozen, onStop]);
@@ -54,35 +57,41 @@ export default function PowerMeter({ type, onStop, active }: PowerMeterProps) {
     if (active) setFrozen(false);
   }, [active]);
 
+  useEffect(() => {
+    if (!active || frozen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.code === 'Space' || e.code === 'Enter') {
+        e.preventDefault();
+        handleStop();
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [active, frozen, handleStop]);
+
+  const inSweetSpot = value >= 45 && value <= 55;
+  const valueColor = inSweetSpot ? 'var(--neon-green)' : value >= 35 && value <= 65 ? 'var(--neon-yellow)' : 'var(--neon-red)';
+
   return (
-    <div className="power-meter-wrapper" onClick={handleStop} style={{ cursor: 'pointer' }}>
-      <div className="power-meter-label pixel-text">
-        {type === 'power' ? 'POWER' : 'ACCURACY'}
+    <div className="power-meter-wrapper" onClick={handleStop}
+      style={{ cursor: 'pointer', transition: 'transform 0.1s', transform: flash ? 'scale(1.03)' : 'scale(1)' }}>
+      <div className="power-meter-label pixel-text" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span>{type === 'power' ? 'POWER' : 'ACCURACY'}</span>
+        <span style={{ fontSize: '8px', color: 'var(--text-dim)' }}>Click or press Space</span>
       </div>
       <div className="power-meter">
-        <div
-          className="power-fill"
-          style={{ width: `${value}%` }}
-        />
-        {type === 'accuracy' && (
-          <div
-            className="accuracy-target-zone"
-            style={{
-              position: 'absolute',
-              left: '45%',
-              width: '10%',
-              top: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(74, 222, 128, 0.3)',
-              borderLeft: '2px solid #4ade80',
-              borderRight: '2px solid #4ade80',
-              pointerEvents: 'none',
-            }}
-          />
-        )}
+        <div className="power-fill" style={{ width: `${value}%` }} />
+        {/* Sweet spot indicator on both meters */}
+        <div style={{
+          position: 'absolute', left: '45%', width: '10%', top: 0, bottom: 0,
+          backgroundColor: 'rgba(74, 222, 128, 0.25)',
+          borderLeft: '2px solid rgba(74, 222, 128, 0.6)',
+          borderRight: '2px solid rgba(74, 222, 128, 0.6)',
+          pointerEvents: 'none',
+        }} />
       </div>
-      <div className="power-meter-value pixel-text" style={{ textAlign: 'center', marginTop: 4 }}>
-        {Math.round(value)}
+      <div className="power-meter-value pixel-text" style={{ textAlign: 'center', marginTop: 4, color: valueColor, transition: 'color 0.1s' }}>
+        {Math.round(value)} {flash && <span style={{ color: 'var(--neon-green)' }}>LOCKED!</span>}
       </div>
     </div>
   );
