@@ -12,6 +12,7 @@ export default function PowerMeter({ type, onStop, active }: PowerMeterProps) {
   const [value, setValue] = useState(0);
   const [frozen, setFrozen] = useState(false);
   const [flash, setFlash] = useState(false);
+  const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dirRef = useRef(1);
   const valueRef = useRef(0);
   const rafRef = useRef<number | null>(null);
@@ -48,7 +49,8 @@ export default function PowerMeter({ type, onStop, active }: PowerMeterProps) {
     if (frozen) return;
     setFrozen(true);
     setFlash(true);
-    setTimeout(() => setFlash(false), 300);
+    if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
+    flashTimerRef.current = setTimeout(() => setFlash(false), 300);
     if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     onStop(Math.round(valueRef.current));
   }, [frozen, onStop]);
@@ -56,6 +58,10 @@ export default function PowerMeter({ type, onStop, active }: PowerMeterProps) {
   useEffect(() => {
     if (active) setFrozen(false);
   }, [active]);
+
+  useEffect(() => {
+    return () => { if (flashTimerRef.current) clearTimeout(flashTimerRef.current); };
+  }, []);
 
   useEffect(() => {
     if (!active || frozen) return;

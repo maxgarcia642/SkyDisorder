@@ -18,6 +18,14 @@ const BUTTON_COLORS: Record<MinigameId, string> = {
   debatejudge: 'var(--neon-pink)',
   codepuzzle: 'var(--neon-cyan)',
   bowling: 'var(--neon-red)',
+  dockerdash: '#4fc3f7',
+  gitrebase: '#ff9800',
+  bugsquash: '#f44336',
+  stockticker: '#4caf50',
+  typeracer: '#ffeb3b',
+  firewall: '#e040fb',
+  mini2048: '#00bcd4',
+  tictactoe: '#ff6eb4',
 };
 
 export default function MinigameMenu() {

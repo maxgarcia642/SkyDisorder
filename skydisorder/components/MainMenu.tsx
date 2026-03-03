@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useChaosStore } from '@/lib/chaosStore';
+import { useChaosStore, MINIGAME_IDS } from '@/lib/chaosStore';
 import { TAGLINE } from '@/lib/utils';
 
 export default function MainMenu() {
@@ -41,7 +41,7 @@ export default function MainMenu() {
 
         <button className="pixel-panel" onClick={() => setGameState('minigame_menu')}
           style={{ width: '100%', cursor: 'pointer', fontSize: '18px', color: 'var(--neon-blue)', borderColor: 'var(--neon-blue)', padding: '14px' }}>
-          MINIGAMES (12)
+          MINIGAMES ({MINIGAME_IDS.length})
         </button>
 
         <button className="pixel-panel" onClick={() => setGameState('leaderboard')}

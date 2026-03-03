@@ -26,6 +26,7 @@ import Leaderboard from '@/components/Leaderboard';
 import AICaddy from '@/components/AICaddy';
 import ChaosNewsFeed from '@/components/ChaosNewsFeed';
 import SponsorShop from '@/components/SponsorShop';
+import AssetUploader from '@/components/AssetUploader';
 
 import CoffeePour from '@/components/minigames/CoffeePour';
 import TacticalStrike from '@/components/minigames/TacticalStrike';
@@ -39,6 +40,14 @@ import FoodRush from '@/components/minigames/FoodRush';
 import DebateJudge from '@/components/minigames/DebateJudge';
 import CodePuzzle from '@/components/minigames/CodePuzzle';
 import BowlingStrike from '@/components/minigames/BowlingStrike';
+import DockerDash from '@/components/minigames/DockerDash';
+import GitRebase from '@/components/minigames/GitRebase';
+import BugSquash from '@/components/minigames/BugSquash';
+import StockTicker from '@/components/minigames/StockTicker';
+import TypeRacer from '@/components/minigames/TypeRacer';
+import FirewallGame from '@/components/minigames/FirewallGame';
+import Mini2048 from '@/components/minigames/Mini2048';
+import TicTacToeGame from '@/components/minigames/TicTacToeGame';
 
 interface Props {
   initialRepos: Repo[];
@@ -125,6 +134,22 @@ export function HomeClient({ initialRepos }: Props) {
         return <CodePuzzle onComplete={completeMinigame} />;
       case 'bowling':
         return <BowlingStrike onComplete={completeMinigame} />;
+      case 'dockerdash':
+        return <DockerDash onComplete={completeMinigame} />;
+      case 'gitrebase':
+        return <GitRebase onComplete={completeMinigame} />;
+      case 'bugsquash':
+        return <BugSquash onComplete={completeMinigame} />;
+      case 'stockticker':
+        return <StockTicker onComplete={completeMinigame} />;
+      case 'typeracer':
+        return <TypeRacer onComplete={completeMinigame} />;
+      case 'firewall':
+        return <FirewallGame onComplete={completeMinigame} />;
+      case 'mini2048':
+        return <Mini2048 onComplete={completeMinigame} />;
+      case 'tictactoe':
+        return <TicTacToeGame onComplete={completeMinigame} />;
       default:
         return <TasteRadar onComplete={completeMinigame} />;
     }
@@ -154,6 +179,7 @@ export function HomeClient({ initialRepos }: Props) {
             <ChaosNewsFeed />
           </div>
           <SponsorShop />
+          <AssetUploader />
         </div>
 
         <div className="course-grid">

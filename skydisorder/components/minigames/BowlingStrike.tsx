@@ -163,11 +163,13 @@ export default function BowlingStrike({ onComplete }: Props) {
         </button>
       )}
 
-      <button className="pixel-panel"
-        onClick={() => { if (!completedRef.current) { completedRef.current = true; onComplete(false, 0); } }}
-        style={{ cursor: 'pointer', color: '#888', borderColor: '#888', padding: '6px 16px', fontSize: '10px' }}>
-        QUIT
-      </button>
+      {phase !== 'result' && (
+        <button className="pixel-panel"
+          onClick={() => { if (!completedRef.current) { completedRef.current = true; onComplete(false, 0); } }}
+          style={{ cursor: 'pointer', color: '#888', borderColor: '#888', padding: '6px 16px', fontSize: '10px' }}>
+          QUIT
+        </button>
+      )}
 
       {result === 'success' && <div style={{ color: 'var(--neon-green)', fontSize: '20px' }}>STRIKE!</div>}
       {result === 'fail' && <div style={{ color: 'var(--neon-red)', fontSize: '20px' }}>GUTTER BALL!</div>}
