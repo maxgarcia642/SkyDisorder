@@ -70,12 +70,15 @@ const TIME_PER_ROUND = 12;
 export default function CodePuzzle({ onComplete }: Props) {
   const [round, setRound] = useState(0);
   const [correct, setCorrect] = useState(0);
-  const [puzzle, setPuzzle] = useState(() => PUZZLES[Math.floor(Math.random() * PUZZLES.length)]);
+  const [puzzle, setPuzzle] = useState(() => {
+    const idx = Math.floor(Math.random() * PUZZLES.length);
+    return { idx, data: PUZZLES[idx] };
+  });
   const [timeLeft, setTimeLeft] = useState(TIME_PER_ROUND);
   const [selected, setSelected] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [result, setResult] = useState<'none' | 'success' | 'fail'>('none');
-  const usedRef = useRef<Set<number>>(new Set());
+  const usedRef = useRef<Set<number>>(new Set([puzzle.idx]));
   const completedRef = useRef(false);
   const roundActiveRef = useRef(true);
 
@@ -83,7 +86,7 @@ export default function CodePuzzle({ onComplete }: Props) {
     let idx: number;
     do { idx = Math.floor(Math.random() * PUZZLES.length); } while (usedRef.current.has(idx) && usedRef.current.size < PUZZLES.length);
     usedRef.current.add(idx);
-    return PUZZLES[idx];
+    return { idx, data: PUZZLES[idx] };
   };
 
   useEffect(() => {
@@ -126,10 +129,10 @@ export default function CodePuzzle({ onComplete }: Props) {
     if (feedback || result !== 'none' || !roundActiveRef.current) return;
     roundActiveRef.current = false;
     setSelected(idx);
-    const isCorrect = idx === puzzle.answer;
+    const isCorrect = idx === puzzle.data.answer;
     const newCorrect = isCorrect ? correct + 1 : correct;
     setCorrect(newCorrect);
-    setFeedback(isCorrect ? 'CORRECT!' : `WRONG! Answer: ${puzzle.options[puzzle.answer]}`);
+    setFeedback(isCorrect ? 'CORRECT!' : `WRONG! Answer: ${puzzle.data.options[puzzle.data.answer]}`);
     setTimeout(() => advanceRound(newCorrect), 1200);
   };
 
@@ -142,7 +145,7 @@ export default function CodePuzzle({ onComplete }: Props) {
         <span>Score: {correct}</span>
       </div>
 
-      <div style={{ color: 'var(--neon-cyan)', fontSize: '13px' }}>{puzzle.question}</div>
+      <div style={{ color: 'var(--neon-cyan)', fontSize: '13px' }}>{puzzle.data.question}</div>
 
       <div style={{
         width: '100%', padding: '12px', background: 'rgba(0,0,0,0.6)',
@@ -150,22 +153,22 @@ export default function CodePuzzle({ onComplete }: Props) {
         fontFamily: '"Courier New", monospace', fontSize: '13px', color: 'var(--neon-green)',
         whiteSpace: 'pre-wrap', lineHeight: 1.5,
       }}>
-        {puzzle.code}
+        {puzzle.data.code}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', width: '100%' }}>
-        {puzzle.options.map((opt, i) => (
+        {puzzle.data.options.map((opt, i) => (
           <button key={i} className="pixel-panel" onClick={() => handleAnswer(i)}
             disabled={!!feedback}
             style={{
               cursor: feedback ? 'default' : 'pointer', padding: '10px', fontSize: '12px',
               fontFamily: '"Courier New", monospace',
               color: selected === i
-                ? (i === puzzle.answer ? 'var(--neon-green)' : 'var(--neon-red)')
-                : (feedback && i === puzzle.answer ? 'var(--neon-green)' : 'var(--neon-cyan)'),
+                ? (i === puzzle.data.answer ? 'var(--neon-green)' : 'var(--neon-red)')
+                : (feedback && i === puzzle.data.answer ? 'var(--neon-green)' : 'var(--neon-cyan)'),
               borderColor: selected === i
-                ? (i === puzzle.answer ? 'var(--neon-green)' : 'var(--neon-red)')
-                : (feedback && i === puzzle.answer ? 'var(--neon-green)' : '#555'),
+                ? (i === puzzle.data.answer ? 'var(--neon-green)' : 'var(--neon-red)')
+                : (feedback && i === puzzle.data.answer ? 'var(--neon-green)' : '#555'),
               background: selected === i ? 'rgba(255,255,255,0.05)' : 'transparent',
             }}>
             {opt}

@@ -46,22 +46,32 @@ export const MINIGAME_IDS = [
   'coffee', 'tactical', 'radar', 'snake',
   'numberguess', 'realorbot', 'mapfinder', 'plantwater',
   'foodrush', 'debatejudge', 'codepuzzle', 'bowling',
+  'dockerdash', 'gitrebase', 'bugsquash', 'stockticker',
+  'typeracer', 'firewall', 'mini2048', 'tictactoe',
 ] as const;
 export type MinigameId = (typeof MINIGAME_IDS)[number];
 
 export const MINIGAME_DISPLAY_NAMES: Record<MinigameId, string> = {
-  coffee: 'Coffee Pour',
-  tactical: 'Tactical Strike',
-  radar: 'Taste Radar',
-  snake: 'Snake Dash',
-  numberguess: 'Number Guess',
-  realorbot: 'Real or Bot?',
-  mapfinder: 'Map Finder',
-  plantwater: 'Plant Water',
-  foodrush: 'Food Rush',
-  debatejudge: 'Debate Judge',
-  codepuzzle: 'Code Puzzle',
-  bowling: 'Bowling Strike',
+  coffee: 'Caffeine Crisis',
+  tactical: 'Deadline Destroyer',
+  radar: 'Lunch Lottery',
+  snake: 'Cable Management',
+  numberguess: 'Estimate Roulette',
+  realorbot: 'Bot or Intern?',
+  mapfinder: 'Remote Worker Tracker',
+  plantwater: 'Office Plant Duty',
+  foodrush: 'Expense Report Speedrun',
+  debatejudge: 'Standup Arbitration',
+  codepuzzle: 'Code Review Chaos',
+  bowling: 'Layoff Bowling',
+  dockerdash: 'Container Stacker',
+  gitrebase: 'Rebase Roulette',
+  bugsquash: 'QA Nightmare',
+  stockticker: 'Stonks Simulator',
+  typeracer: 'Keyboard Warrior',
+  firewall: 'Firewall Frenzy',
+  mini2048: 'Sprint Planning 2048',
+  tictactoe: 'Whiteboard Interview',
 };
 
 export const MINIGAME_SOURCES: Record<MinigameId, string> = {
@@ -69,7 +79,7 @@ export const MINIGAME_SOURCES: Record<MinigameId, string> = {
   tactical: 'modern-aw-game-main',
   radar: 'TasteMap-main',
   snake: 'native-stuff-main',
-  numberguess: 'native-stuff-main (NativeGame)',
+  numberguess: 'native-stuff-main',
   realorbot: 'robotriffs-main',
   mapfinder: 'maptiler-sdk-js-fork-main',
   plantwater: 'lovefern-main',
@@ -77,6 +87,14 @@ export const MINIGAME_SOURCES: Record<MinigameId, string> = {
   debatejudge: 'verydebate-main',
   codepuzzle: 'advent-of-code-main',
   bowling: 'thoughtsonbowling-main',
+  dockerdash: 'zmk-fourier-master',
+  gitrebase: 'Terminal-Code-Collective',
+  bugsquash: 'code_puppy-main',
+  stockticker: 'yield-monitor-main',
+  typeracer: 'advent-of-code-main',
+  firewall: 'native-stuff-main',
+  mini2048: 'nextjs-dashboard-main',
+  tictactoe: 'robotriffs-main',
 };
 
 interface SwingState {
@@ -115,6 +133,9 @@ interface ChaosStore {
   showUploadModal: boolean;
   swing: SwingState;
   particles: { id: string; x: number; y: number; color: string }[];
+
+  customAssets: { id: string; dataUrl: string; name: string }[];
+  addCustomAsset: (asset: { id: string; dataUrl: string; name: string }) => void;
 
   hydrate: () => void;
   addMoney: (amount: number) => void;
@@ -207,6 +228,14 @@ export const useChaosStore = create<ChaosStore>((set, get) => ({
   showUploadModal: false,
   swing: { ...DEFAULT_SWING },
   particles: [],
+  customAssets: [],
+
+  addCustomAsset: (asset) =>
+    set((s) => ({
+      customAssets: [...s.customAssets, asset],
+      sponsorMoney: s.sponsorMoney + 500,
+      messages: [...s.messages, makeMsg(`Custom asset "${asset.name}" uploaded! +$500`)].slice(-50),
+    })),
 
   hydrate: () => {
     if (typeof window === 'undefined') return;
@@ -215,17 +244,23 @@ export const useChaosStore = create<ChaosStore>((set, get) => ({
       const chaos = localStorage.getItem('sky_chaosLevel');
       const lb = localStorage.getItem('sky_leaderboard');
       const items = localStorage.getItem('sky_purchasedItems');
+      const parsed: string[] = items !== null ? JSON.parse(items) : [];
+      const purchased = new Set<string>(parsed);
       set({
         sponsorMoney: money !== null ? JSON.parse(money) : 0,
         chaosLevel: chaos !== null ? JSON.parse(chaos) : 0,
-        leaderboard: lb !== null ? JSON.parse(lb) : [],
-        purchasedItems: items !== null ? new Set(JSON.parse(items)) : new Set<string>(),
+        leaderboard: lb !== null ? (JSON.parse(lb) as { name: string; score: number; money?: number }[]).map(e => ({ ...e, money: e.money ?? 0 })) : [],
+        purchasedItems: purchased,
+        scoreMultiplier: purchased.has('double_score') ? 2 : 1,
+        maxStrikes: 3 + (purchased.has('extra_strike') ? 1 : 0),
+        chaosBoost: purchased.has('chaos_boost'),
       });
     } catch { /* ignore */ }
   },
 
   purchaseItem: (itemId) =>
     set((s) => {
+      if (s.purchasedItems.has(itemId)) return s;
       const next = new Set(s.purchasedItems);
       next.add(itemId);
       persist('sky_purchasedItems', [...next]);
@@ -386,7 +421,7 @@ export const useChaosStore = create<ChaosStore>((set, get) => ({
     let newStrikes = s.strikes;
     let moneyChange = 0;
     let messageText = '';
-    let nextMultiplier = 1;
+    let nextMultiplier = s.purchasedItems.has('double_score') ? 2 : 1;
 
     if (isGoodHit) {
       newStreak += 1;
@@ -498,28 +533,33 @@ export const useChaosStore = create<ChaosStore>((set, get) => ({
   setGameState: (state) => set({ gameState: state }),
 
   resetGame: () =>
-    set((s) => ({
-      sponsorMoney: 0,
-      strikes: 0,
-      maxStrikes: 3,
-      streak: 0,
-      partnerships: 0,
-      totalScore: 0,
-      currentHole: 1,
-      lastEarnings: 0,
-      scoreMultiplier: 1,
-      skipNextMinigame: false,
-      chaosBoost: false,
-      purchasedItems: new Set<string>(),
-      gameState: 'menu',
-      currentMinigame: null,
-      activeFeatures: [],
-      chaosLevel: 0,
-      messages: [],
-      swing: { ...DEFAULT_SWING },
-      particles: [],
-      repos: s.repos.map((r) => ({ ...r, played: false, score: 0 })),
-    })),
+    set((s) => {
+      persist('sky_sponsorMoney', 0);
+      persist('sky_chaosLevel', 0);
+      persist('sky_purchasedItems', []);
+      return {
+        sponsorMoney: 0,
+        strikes: 0,
+        maxStrikes: 3,
+        streak: 0,
+        partnerships: 0,
+        totalScore: 0,
+        currentHole: 1,
+        lastEarnings: 0,
+        scoreMultiplier: 1,
+        skipNextMinigame: false,
+        chaosBoost: false,
+        purchasedItems: new Set<string>(),
+        gameState: 'menu',
+        currentMinigame: null,
+        activeFeatures: [],
+        chaosLevel: 0,
+        messages: [],
+        swing: { ...DEFAULT_SWING },
+        particles: [],
+        repos: s.repos.map((r) => ({ ...r, played: false, score: 0 })),
+      };
+    }),
 
   setCurrentMinigame: (minigame) => set({ currentMinigame: minigame }),
 

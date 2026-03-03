@@ -21,9 +21,11 @@ export default function SwingGame() {
 
   if (!swing.active) return null;
 
-  const powerScore = Math.round(calcPowerScore(swing.power));
-  const accuracyScore = Math.round(calcAccuracyScore(swing.accuracy));
-  const total = powerScore + accuracyScore;
+  const rawPower = calcPowerScore(swing.power);
+  const rawAccuracy = calcAccuracyScore(swing.accuracy);
+  const total = Math.round(rawPower + rawAccuracy);
+  const powerScore = Math.round(rawPower);
+  const accuracyScore = Math.round(rawAccuracy);
 
   return (
     <div className="swing-modal">
@@ -77,8 +79,8 @@ export default function SwingGame() {
             <p className="pixel-text" style={{ fontSize: 14, marginTop: 8 }}>
               Total: {total} pts
             </p>
-            <p className="pixel-text" style={{ marginTop: 6, fontSize: 10, color: 'var(--text-dim)' }}>
-              (Earnings shown after swing completes)
+            <p className="pixel-text" style={{ marginTop: 6, fontSize: 12, color: lastEarnings >= 0 ? 'var(--neon-green)' : 'var(--neon-red)' }}>
+              {lastEarnings !== 0 ? `Last swing: ${lastEarnings >= 0 ? '+' : ''}$${lastEarnings.toLocaleString()}` : ''}
             </p>
             <p
               className="pixel-text"

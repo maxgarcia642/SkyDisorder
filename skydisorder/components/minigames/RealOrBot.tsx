@@ -66,7 +66,7 @@ export default function RealOrBot({ onComplete }: Props) {
     <div className="pixel-panel" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '30px', gap: '16px', maxWidth: 420 }}>
       <h3 style={{ color: '#c084fc' }}>Real or Bot?</h3>
       <p style={{ color: '#ccc', textAlign: 'center', fontSize: '11px' }}>Is this post from a human or an AI bot?</p>
-      <div style={{ color: 'var(--neon-yellow)', fontSize: '12px' }}>Round {round + 1}/{ROUNDS} | Score: {correct}/{round}</div>
+      <div style={{ color: 'var(--neon-yellow)', fontSize: '12px' }}>Round {round + 1}/{ROUNDS} | Score: {correct}/{ROUNDS}</div>
 
       <div style={{
         background: 'rgba(0,0,0,0.4)', border: '2px solid #555', borderRadius: '4px',

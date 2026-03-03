@@ -51,16 +51,13 @@ export default function CoffeePour({ onComplete }: Props) {
 
     if (requestRef.current) cancelAnimationFrame(requestRef.current);
 
+    completedRef.current = true;
     if (fillLevel >= 80 && fillLevel <= 90) {
       setResult('success');
-      setTimeout(() => {
-        if (!completedRef.current) { completedRef.current = true; onComplete(true, 100); }
-      }, 1500);
+      setTimeout(() => onComplete(true, 100), 1500);
     } else {
       setResult('fail');
-      setTimeout(() => {
-        if (!completedRef.current) { completedRef.current = true; onComplete(false, 0); }
-      }, 1500);
+      setTimeout(() => onComplete(false, 0), 1500);
     }
   };
 

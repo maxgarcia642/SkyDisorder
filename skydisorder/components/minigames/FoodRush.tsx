@@ -41,6 +41,7 @@ export default function FoodRush({ onComplete }: Props) {
   const [result, setResult] = useState<'none' | 'success' | 'fail'>('none');
   const gameOverRef = useRef(false);
   const completedRef = useRef(false);
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -53,7 +54,10 @@ export default function FoodRush({ onComplete }: Props) {
         return prev - 1;
       });
     }, 1000);
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+      timersRef.current.forEach(t => clearTimeout(t));
+    };
   }, []);
 
   useEffect(() => {
@@ -61,7 +65,7 @@ export default function FoodRush({ onComplete }: Props) {
       const success = correct >= 5;
       setResult(success ? 'success' : 'fail');
       completedRef.current = true;
-      setTimeout(() => onComplete(success, correct * 12), 1500);
+      timersRef.current.push(setTimeout(() => onComplete(success, correct * 12), 1500));
     }
   }, [timeLeft, correct, onComplete]);
 
@@ -72,7 +76,7 @@ export default function FoodRush({ onComplete }: Props) {
     setCorrect(newCorrect);
     setFeedback(isCorrect ? 'YUM!' : `NOPE! It's ${currentFood.cuisine}`);
 
-    setTimeout(() => {
+    timersRef.current.push(setTimeout(() => {
       const nextRound = round + 1;
       if (nextRound >= ROUNDS) {
         gameOverRef.current = true;
@@ -80,14 +84,14 @@ export default function FoodRush({ onComplete }: Props) {
         setResult(success ? 'success' : 'fail');
         if (!completedRef.current) {
           completedRef.current = true;
-          setTimeout(() => onComplete(success, newCorrect * 12), 1500);
+          timersRef.current.push(setTimeout(() => onComplete(success, newCorrect * 12), 1500));
         }
       } else {
         setRound(nextRound);
         setCurrentFood(FOODS[Math.floor(Math.random() * FOODS.length)]);
         setFeedback(null);
       }
-    }, 600);
+    }, 600));
   };
 
   return (
@@ -131,7 +135,7 @@ export default function FoodRush({ onComplete }: Props) {
       )}
 
       <button className="pixel-panel"
-        onClick={() => { if (!completedRef.current) { completedRef.current = true; gameOverRef.current = true; onComplete(false, 0); } }}
+        onClick={() => { timersRef.current.forEach(t => clearTimeout(t)); if (!completedRef.current) { completedRef.current = true; gameOverRef.current = true; onComplete(false, 0); } }}
         style={{ cursor: 'pointer', color: '#888', borderColor: '#888', padding: '6px 16px', fontSize: '10px' }}>
         QUIT
       </button>

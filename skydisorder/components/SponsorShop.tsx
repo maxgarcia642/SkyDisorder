@@ -17,7 +17,7 @@ const SHOP_ITEMS: ShopItem[] = [
   { id: 'extra_strike', name: 'Extra Life', description: '+1 strike tolerance (permanent this run)', cost: 5000, emoji: '❤️', source: 'modern-aw-game-main' },
   { id: 'skip_minigame', name: 'Auto-Win Token', description: 'Auto-pass next minigame', cost: 3000, emoji: '🎫', source: 'code_puppy-main' },
   { id: 'chaos_boost', name: 'Chaos Amplifier', description: 'Chaos button gives 3x money', cost: 4000, emoji: '🔥', source: 'neon-main' },
-  { id: 'coffee_boost', name: 'Espresso Shot', description: '+$1000 instant cash', cost: 1500, emoji: '☕', source: 'coffee-please-main' },
+  { id: 'coffee_boost', name: 'Espresso Shot', description: '+$1000 instant cash (repeatable)', cost: 500, emoji: '☕', source: 'coffee-please-main' },
 ];
 
 export default function SponsorShop() {
@@ -29,9 +29,10 @@ export default function SponsorShop() {
   const purchaseItem = useChaosStore((s) => s.purchaseItem);
 
   const handleBuy = (item: ShopItem) => {
-    if (sponsorMoney < item.cost || purchasedItems.has(item.id)) return;
+    const isRepeatable = item.id === 'coffee_boost';
+    if (sponsorMoney < item.cost || (!isRepeatable && purchasedItems.has(item.id))) return;
     addMoney(-item.cost);
-    purchaseItem(item.id);
+    if (!isRepeatable) purchaseItem(item.id);
     addMessage(`Purchased ${item.name}! Effect active.`);
 
     if (item.id === 'coffee_boost') {
@@ -70,7 +71,7 @@ export default function SponsorShop() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {SHOP_ITEMS.map((item) => {
           const canAfford = sponsorMoney >= item.cost;
-          const owned = purchasedItems.has(item.id);
+          const owned = item.id === 'coffee_boost' ? false : purchasedItems.has(item.id);
           return (
             <button key={item.id} onClick={() => handleBuy(item)} disabled={!canAfford || owned}
               className="pixel-panel"

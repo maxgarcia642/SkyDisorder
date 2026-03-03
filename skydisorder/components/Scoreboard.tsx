@@ -7,7 +7,7 @@ export function Scoreboard() {
 
   const playedCount = repos.filter((r) => r.played).length;
   const totalScore = repos.reduce((sum, r) => sum + (r.played ? r.score : 0), 0);
-  const totalPar = repos.reduce((sum, r) => sum + r.par, 0);
+  const totalPar = repos.reduce((sum, r) => sum + (r.played ? r.par : 0), 0);
   const diff = totalScore - totalPar;
   const diffColor = diff < 0 ? 'var(--neon-green)' : diff > 0 ? 'var(--neon-red)' : 'var(--neon-yellow)';
   const diffLabel = diff < 0 ? `${diff} (Under Par!)` : diff > 0 ? `+${diff} (Over Par)` : 'Even Par';
