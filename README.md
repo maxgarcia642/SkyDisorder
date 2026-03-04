@@ -2,12 +2,13 @@
 
 **Breaking the ground with no land order at all. Try Google products like NotebookLM, Gemini, and their Labs #MayOrMayNotBeSponsored**
 
-A chaotic, interconnected multi-repo platform styled as a retro golf arcade machine game inspired by Neo Turf Masters (1996 Neo Geo). This app turns **382 repositories** from a single folder into a playable, gamified startup satire where every repo becomes a game entity.
+A chaotic, interconnected multi-repo platform styled as a retro golf arcade machine game inspired by Neo Turf Masters (1996 Neo Geo). This app turns **384 repositories** from a single folder into a playable, gamified startup satire where every repo becomes a game entity.
 
 ## Run
 
 ```bash
-cd skydisorder
+git clone https://github.com/maxgarcia642/SkyDisorder.git
+cd SkyDisorder
 npm install
 npm run dev
 ```
@@ -16,7 +17,7 @@ Open `http://localhost:3000`.
 
 ## What's In v3.0
 
-### 382 Repos Integrated as Game Entities
+### 384 Repos Integrated as Game Entities
 
 Every single repo from the Sky Disorder folder is mapped to a satirical startup-themed game entity:
 
@@ -34,7 +35,7 @@ Every single repo from the Sky Disorder folder is mapped to a satirical startup-
 | Courses | 16 | Background themes for the arcade |
 | Clubhouses | 2 | Full app showcases |
 | Trophies | 12 | Proof of completed projects |
-| Equipment | 12 | Unlockable dev tools |
+| Equipment | 14 | Unlockable dev tools |
 
 ### 20 Playable Minigames
 
