@@ -2,7 +2,7 @@
 
 **Breaking the ground with no land order at all. Try Google products like NotebookLM, Gemini, and their Labs #MayOrMayNotBeSponsored**
 
-A chaotic, interconnected multi-repo platform styled as a retro golf arcade machine game inspired by Neo Turf Masters (1996 Neo Geo). This app turns **384 repositories** from a single folder into a playable, gamified startup satire where every repo becomes a game entity.
+A chaotic, interconnected multi-repo platform styled as a retro golf arcade machine game inspired by Neo Turf Masters (1996 Neo Geo). This satirical startup app turns a collective of what seems to be **various repository programs** into a playable, gamified entity.
 
 ## Run
 
