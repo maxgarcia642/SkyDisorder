@@ -12,6 +12,9 @@ export default function AssetUploader() {
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const ALLOWED = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+    if (!ALLOWED.includes(file.type)) { alert('Only PNG/JPEG/GIF/WebP allowed'); return; }
+    if (file.size > 2 * 1024 * 1024) { alert('Max 2 MB'); return; }
     const reader = new FileReader();
     reader.onload = () => {
       setPreview(reader.result as string);

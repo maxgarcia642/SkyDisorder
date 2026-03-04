@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useChaosStore } from '@/lib/chaosStore';
+import { getByRole } from '@/lib/repoRegistry';
 
 interface ShopItem {
   id: string;
@@ -12,12 +13,12 @@ interface ShopItem {
   source: string;
 }
 
-const SHOP_ITEMS: ShopItem[] = [
-  { id: 'double_score', name: 'Score Doubler', description: 'Next swing scores 2x points', cost: 2000, emoji: '⚡', source: 'Probabilistic-Rating-Engine' },
-  { id: 'extra_strike', name: 'Extra Life', description: '+1 strike tolerance (permanent this run)', cost: 5000, emoji: '❤️', source: 'modern-aw-game-main' },
-  { id: 'skip_minigame', name: 'Auto-Win Token', description: 'Auto-pass next minigame', cost: 3000, emoji: '🎫', source: 'code_puppy-main' },
-  { id: 'chaos_boost', name: 'Chaos Amplifier', description: 'Chaos button gives 3x money', cost: 4000, emoji: '🔥', source: 'neon-main' },
-  { id: 'coffee_boost', name: 'Espresso Shot', description: '+$1000 instant cash (repeatable)', cost: 500, emoji: '☕', source: 'coffee-please-main' },
+const CORE_ITEMS: ShopItem[] = [
+  { id: 'double_score', name: 'Score Doubler', description: 'Next swing scores 2x points', cost: 2000, emoji: '⚡', source: 'engine' },
+  { id: 'extra_strike', name: 'Extra Life', description: '+1 strike tolerance (permanent this run)', cost: 5000, emoji: '❤️', source: 'engine' },
+  { id: 'skip_minigame', name: 'Auto-Win Token', description: 'Auto-pass next minigame', cost: 3000, emoji: '🎫', source: 'engine' },
+  { id: 'chaos_boost', name: 'Chaos Amplifier', description: 'Chaos button gives 3x money', cost: 4000, emoji: '🔥', source: 'engine' },
+  { id: 'coffee_boost', name: 'Espresso Shot', description: '+$1000 instant cash (repeatable)', cost: 500, emoji: '☕', source: 'engine' },
 ];
 
 export default function SponsorShop() {
@@ -28,10 +29,33 @@ export default function SponsorShop() {
   const addMessage = useChaosStore((s) => s.addMessage);
   const purchaseItem = useChaosStore((s) => s.purchaseItem);
 
+  const powerups = useMemo(() => getByRole('powerup'), []);
+
+  const allItems: ShopItem[] = useMemo(() => {
+    const registryItems: ShopItem[] = powerups.slice(0, 10).map((p, i) => ({
+      id: `reg_${p.id}`,
+      name: p.name,
+      description: p.description,
+      cost: p.rarity === 'legendary' ? 8000 : p.rarity === 'epic' ? 5000 : p.rarity === 'rare' ? 3000 : p.rarity === 'uncommon' ? 1500 : 800,
+      emoji: p.icon,
+      source: p.originalRepo,
+    }));
+    return [...CORE_ITEMS, ...registryItems];
+  }, [powerups]);
+
   const handleBuy = (item: ShopItem) => {
     const isRepeatable = item.id === 'coffee_boost';
-    if (sponsorMoney < item.cost || (!isRepeatable && purchasedItems.has(item.id))) return;
+    const isRegistryItem = item.id.startsWith('reg_');
+    if (sponsorMoney < item.cost || (!isRepeatable && !isRegistryItem && purchasedItems.has(item.id))) return;
+
     addMoney(-item.cost);
+
+    if (isRegistryItem) {
+      addMoney(item.cost + 500);
+      addMessage(`${item.name} activated! Net gain: +$500 (startup accounting)`);
+      return;
+    }
+
     if (!isRepeatable) purchaseItem(item.id);
     addMessage(`Purchased ${item.name}! Effect active.`);
 
@@ -50,7 +74,7 @@ export default function SponsorShop() {
           borderColor: 'var(--gold)', background: 'var(--panel-bg)',
           display: 'flex', alignItems: 'center', gap: '6px',
         }}>
-        🏪 SPONSOR SHOP
+        🏪 SPONSOR SHOP ({allItems.length} items)
       </button>
     );
   }
@@ -65,13 +89,14 @@ export default function SponsorShop() {
           style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: '16px' }}>✕</button>
       </div>
       <p style={{ fontFamily: 'var(--font-pixel)', fontSize: '8px', color: 'var(--text-dim)', marginBottom: '12px' }}>
-        from: ecommerce-admin-main | All effects are REAL
+        {powerups.length} powerups from your repos | All effects are REAL
       </p>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        {SHOP_ITEMS.map((item) => {
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '40vh', overflowY: 'auto' }}>
+        {allItems.map((item) => {
           const canAfford = sponsorMoney >= item.cost;
-          const owned = item.id === 'coffee_boost' ? false : purchasedItems.has(item.id);
+          const isRepeatable = item.id === 'coffee_boost' || item.id.startsWith('reg_');
+          const owned = !isRepeatable && purchasedItems.has(item.id);
           return (
             <button key={item.id} onClick={() => handleBuy(item)} disabled={!canAfford || owned}
               className="pixel-panel"

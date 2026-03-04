@@ -99,18 +99,13 @@ export default function FirewallGame({ onComplete }: Props) {
 
   const handleClick = (id: number) => {
     if (result !== 'none') return;
-    setPackets(prev => prev.map(p => {
-      if (p.id === id && !p.blocked && !p.escaped) return { ...p, blocked: true };
-      return p;
-    }));
-    const pkt = packets.find(p => p.id === id);
-    if (!pkt || pkt.blocked || pkt.escaped) return;
-
-    if (pkt.bad) {
-      setBlockedBad(prev => prev + 1);
-    } else {
-      setBlockedGood(prev => prev + 1);
-    }
+    setPackets(prev => {
+      const pkt = prev.find(p => p.id === id);
+      if (!pkt || pkt.blocked || pkt.escaped) return prev;
+      if (pkt.bad) setBlockedBad(b => b + 1);
+      else setBlockedGood(b => b + 1);
+      return prev.map(p => p.id === id ? { ...p, blocked: true } : p);
+    });
   };
 
   const activePackets = packets.filter((p, i) => i <= spawnIdx.current && !p.blocked && !p.escaped);
