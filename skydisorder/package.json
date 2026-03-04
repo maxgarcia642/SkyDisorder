@@ -1,6 +1,7 @@
 {
   "name": "skydisorder",
-  "version": "1.0.0",
+  "version": "3.0.0",
+  "description": "SkyDisorder: 382 repos integrated as game entities in a chaotic arcade golf startup simulation",
   "private": true,
   "scripts": {
     "dev": "next dev",

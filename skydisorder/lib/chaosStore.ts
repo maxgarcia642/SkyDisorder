@@ -137,6 +137,26 @@ interface ChaosStore {
   customAssets: { id: string; dataUrl: string; name: string }[];
   addCustomAsset: (asset: { id: string; dataUrl: string; name: string }) => void;
 
+  fundingRound: 'bootstrapped' | 'pre-seed' | 'seed' | 'series-a' | 'series-b' | 'series-c' | 'ipo' | 'acquired' | 'bankrupt';
+  burnRate: number;
+  runway: number;
+  valuation: number;
+  equity: number;
+  employees: string[];
+  boardMembers: string[];
+  activeCompetitors: string[];
+  completedMilestones: string[];
+  pendingBoardDemands: string[];
+
+  hireEmployee: (entityId: string, cost: number) => void;
+  fireEmployee: (entityId: string) => void;
+  acceptFunding: (sponsorId: string, amount: number, equityPercent: number) => void;
+  hitMilestone: (milestoneId: string) => void;
+  advanceFundingRound: () => void;
+  addCompetitor: (competitorId: string) => void;
+  removeCompetitor: (competitorId: string) => void;
+  calculateRunway: () => void;
+
   hydrate: () => void;
   addMoney: (amount: number) => void;
   setRepos: (repos: Repo[]) => void;
@@ -230,12 +250,106 @@ export const useChaosStore = create<ChaosStore>((set, get) => ({
   particles: [],
   customAssets: [],
 
-  addCustomAsset: (asset) =>
+  fundingRound: 'bootstrapped',
+  burnRate: 1000,
+  runway: 12,
+  valuation: 0,
+  equity: 100,
+  employees: [],
+  boardMembers: [],
+  activeCompetitors: [],
+  completedMilestones: [],
+  pendingBoardDemands: [],
+
+  hireEmployee: (entityId, cost) =>
+    set((s) => {
+      if (s.employees.includes(entityId) || s.sponsorMoney < cost) return s;
+      const nextMoney = s.sponsorMoney - cost;
+      persist('sky_sponsorMoney', nextMoney);
+      return {
+        employees: [...s.employees, entityId],
+        sponsorMoney: nextMoney,
+        burnRate: s.burnRate + Math.round(cost * 0.1),
+        messages: [...s.messages, makeMsg(`Hired new team member! -$${cost}`)].slice(-50),
+      };
+    }),
+
+  fireEmployee: (entityId) =>
+    set((s) => {
+      if (!s.employees.includes(entityId)) return s;
+      return {
+        employees: s.employees.filter((e) => e !== entityId),
+        burnRate: Math.max(500, s.burnRate - 100),
+        messages: [...s.messages, makeMsg('Team member let go. Burn rate reduced.')].slice(-50),
+      };
+    }),
+
+  acceptFunding: (sponsorId, amount, equityPercent) =>
+    set((s) => {
+      const nextMoney = s.sponsorMoney + amount;
+      const nextEquity = Math.max(0, s.equity - equityPercent);
+      persist('sky_sponsorMoney', nextMoney);
+      const newBoard = equityPercent >= 15 ? [...s.boardMembers, sponsorId] : s.boardMembers;
+      return {
+        sponsorMoney: nextMoney,
+        equity: nextEquity,
+        valuation: s.valuation + amount * 4,
+        boardMembers: newBoard,
+        messages: [...s.messages, makeMsg(`Funding accepted! +$${amount} for ${equityPercent}% equity`)].slice(-50),
+      };
+    }),
+
+  hitMilestone: (milestoneId) =>
+    set((s) => {
+      if (s.completedMilestones.includes(milestoneId)) return s;
+      const bonus = 5000;
+      const nextMoney = s.sponsorMoney + bonus;
+      persist('sky_sponsorMoney', nextMoney);
+      return {
+        completedMilestones: [...s.completedMilestones, milestoneId],
+        sponsorMoney: nextMoney,
+        valuation: s.valuation + 50000,
+        messages: [...s.messages, makeMsg(`Milestone reached! +$${bonus} and valuation boost!`)].slice(-50),
+      };
+    }),
+
+  advanceFundingRound: () =>
+    set((s) => {
+      const order: ChaosStore['fundingRound'][] = ['bootstrapped', 'pre-seed', 'seed', 'series-a', 'series-b', 'series-c', 'ipo'];
+      const idx = order.indexOf(s.fundingRound);
+      if (idx < 0 || idx >= order.length - 1) return s;
+      const next = order[idx + 1];
+      return {
+        fundingRound: next,
+        messages: [...s.messages, makeMsg(`Advanced to ${next.toUpperCase()}! New funding unlocked.`)].slice(-50),
+      };
+    }),
+
+  addCompetitor: (competitorId) =>
     set((s) => ({
-      customAssets: [...s.customAssets, asset],
-      sponsorMoney: s.sponsorMoney + 500,
-      messages: [...s.messages, makeMsg(`Custom asset "${asset.name}" uploaded! +$500`)].slice(-50),
+      activeCompetitors: s.activeCompetitors.includes(competitorId) ? s.activeCompetitors : [...s.activeCompetitors, competitorId],
     })),
+
+  removeCompetitor: (competitorId) =>
+    set((s) => ({
+      activeCompetitors: s.activeCompetitors.filter((c) => c !== competitorId),
+    })),
+
+  calculateRunway: () =>
+    set((s) => ({
+      runway: s.burnRate > 0 ? Math.round(s.sponsorMoney / s.burnRate) : 99,
+    })),
+
+  addCustomAsset: (asset) =>
+    set((s) => {
+      const nextMoney = s.sponsorMoney + 500;
+      persist('sky_sponsorMoney', nextMoney);
+      return {
+        customAssets: [...s.customAssets, asset],
+        sponsorMoney: nextMoney,
+        messages: [...s.messages, makeMsg(`Asset "${asset.name}" uploaded! +$500`)].slice(-50),
+      };
+    }),
 
   hydrate: () => {
     if (typeof window === 'undefined') return;
@@ -557,6 +671,17 @@ export const useChaosStore = create<ChaosStore>((set, get) => ({
         messages: [],
         swing: { ...DEFAULT_SWING },
         particles: [],
+        customAssets: [],
+        fundingRound: 'bootstrapped',
+        burnRate: 1000,
+        runway: 12,
+        valuation: 0,
+        equity: 100,
+        employees: [],
+        boardMembers: [],
+        activeCompetitors: [],
+        completedMilestones: [],
+        pendingBoardDemands: [],
         repos: s.repos.map((r) => ({ ...r, played: false, score: 0 })),
       };
     }),

@@ -27,6 +27,11 @@ import AICaddy from '@/components/AICaddy';
 import ChaosNewsFeed from '@/components/ChaosNewsFeed';
 import SponsorShop from '@/components/SponsorShop';
 import AssetUploader from '@/components/AssetUploader';
+import StartupDashboard from '@/components/StartupDashboard';
+import HireMenu from '@/components/HireMenu';
+import CompetitorTracker from '@/components/CompetitorTracker';
+import MilestoneTracker from '@/components/MilestoneTracker';
+import { getRandomByRole } from '@/lib/repoRegistry';
 
 import CoffeePour from '@/components/minigames/CoffeePour';
 import TacticalStrike from '@/components/minigames/TacticalStrike';
@@ -68,6 +73,10 @@ export function HomeClient({ initialRepos }: Props) {
 
   const [showInterstitial, setShowInterstitial] = useState(false);
   const [interstitialName, setInterstitialName] = useState('');
+  const addMoney = useChaosStore((s) => s.addMoney);
+  const addCompetitor = useChaosStore((s) => s.addCompetitor);
+  const currentHole = useChaosStore((s) => s.currentHole);
+  const [lastHoleForEvent, setLastHoleForEvent] = useState(0);
 
   useEffect(() => {
     hydrate();
@@ -79,6 +88,22 @@ export function HomeClient({ initialRepos }: Props) {
     }
     addMessage(TAGLINE);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (gameState !== 'playing' || currentHole <= lastHoleForEvent) return;
+    setLastHoleForEvent(currentHole);
+    if (Math.random() > 0.1) return;
+    const event = getRandomByRole('event');
+    if (!event) return;
+    const effects = [
+      () => { addMoney(500); addMessage(`${event.icon} EVENT: ${event.name} — Surprise bonus! +$500`); },
+      () => { addMoney(-300); addMessage(`${event.icon} EVENT: ${event.name} — Market correction! -$300`); },
+      () => { const c = getRandomByRole('competitor'); if (c) { addCompetitor(c.id); addMessage(`${event.icon} EVENT: ${event.name} — New competitor: ${c.name}!`); } },
+      () => { addMoney(1000); addMessage(`${event.icon} EVENT: ${event.name} — Viral tweet! +$1,000`); },
+      () => { addMoney(-500); addMessage(`${event.icon} EVENT: ${event.name} — Server outage! -$500`); },
+    ];
+    effects[Math.floor(Math.random() * effects.length)]();
+  }, [currentHole, gameState]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (gameState === 'minigame' && currentMinigame) {
@@ -174,12 +199,20 @@ export function HomeClient({ initialRepos }: Props) {
 
         {/* Repo integrations bar */}
         <div style={{ padding: '0 16px', marginTop: '12px', display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'flex-start' }}>
+          <div style={{ flex: '1 1 200px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <StartupDashboard />
+            <HireMenu />
+          </div>
           <div style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <AICaddy />
             <ChaosNewsFeed />
+            <MilestoneTracker />
           </div>
-          <SponsorShop />
-          <AssetUploader />
+          <div style={{ flex: '1 1 200px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <SponsorShop />
+            <CompetitorTracker />
+            <AssetUploader />
+          </div>
         </div>
 
         <div className="course-grid">

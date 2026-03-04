@@ -3,6 +3,7 @@
 import React from 'react';
 import { useChaosStore, MINIGAME_IDS } from '@/lib/chaosStore';
 import { TAGLINE } from '@/lib/utils';
+import { GAME_ENTITIES } from '@/lib/repoRegistry';
 
 export default function MainMenu() {
   const gameState = useChaosStore((state) => state.gameState);
@@ -64,7 +65,7 @@ export default function MainMenu() {
       </div>
 
       <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '8px', color: 'var(--text-dim)', marginTop: '8px', opacity: 0.5 }}>
-        v2.0 — {new Date().getFullYear()} — Maximum Chaos Edition
+        v3.0 — {new Date().getFullYear()} — {GAME_ENTITIES.length} repos integrated — Maximum Chaos Edition
       </div>
     </div>
   );

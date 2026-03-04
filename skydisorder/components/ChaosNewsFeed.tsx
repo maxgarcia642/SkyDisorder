@@ -1,31 +1,50 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { getByRole, getRandomByRole } from '@/lib/repoRegistry';
 
-const NEWS_ITEMS = [
-  { source: 'robotriffs-main', text: 'AI bot just posted: "Is cereal a soup?" — 47k likes in 2 minutes' },
-  { source: 'social-app-main', text: 'Bluesky trending: #SkyDisorder is NOT a real company (or is it?)' },
-  { source: 'ecommerce-admin-main', text: 'BREAKING: Sponsor Shop inventory updated — new chaos power-ups available' },
-  { source: 'nextjs-dashboard-main', text: 'Analytics report: Chaos levels up 340% since last session' },
-  { source: 'portfolio-v3-main', text: "Coworker's portfolio just crashed. Again. It's a feature." },
-  { source: 'coffee-please-main', text: 'Coffee machine status: DECAF ONLY. Morale at all-time low.' },
-  { source: 'SWOT_Dashboard-main', text: 'NASA SWOT satellite detects water hazard on hole #7. Par adjusted.' },
-  { source: 'nextjs-twitter-clone-main', text: 'Hot take going viral: "Tabs vs spaces debate is actually about power"' },
-  { source: 'indie-stack-main', text: "Someone left a TODO: 'fix everything'. It's been 3 years." },
-  { source: 'personal-website-main', text: "Ethan's website is up! Nobody visited. Classic." },
-  { source: 'storage-closet-main', text: 'Storage closet inventory: 47 unused npm packages found' },
-  { source: 'lovefern-main', text: 'ALERT: Office fern is dying. Nobody watered it since Tuesday.' },
-  { source: 'maptiler-sdk-js-fork-main', text: 'Map update: New shortcut discovered between hole #3 and #9' },
-  { source: 'verydebate-main', text: 'Debate results: AI won 7-2 against humans. Humanity concerned.' },
-  { source: 'Probabilistic-Rating-Engine-main', text: 'Rating update: Your win probability is... let me recalculate...' },
-  { source: 'code_puppy-main', text: 'AI Caddy promoted to Senior Caddy. Still gives bad advice.' },
-  { source: 'modern-aw-game-main', text: 'Tactical alert: Enemy units spotted near the 18th hole' },
-  { source: 'TasteMap-main', text: 'Restaurant finder update: All nearby restaurants are closed. As usual.' },
-  { source: 'next-website-main', text: 'Type animation loading... still loading... almost there...' },
-  { source: 'neon-main', text: 'Database status: Serverless Postgres is feeling lonely' },
+const HEADLINE_TEMPLATES = [
+  (n: string) => `BREAKING: ${n} just pivoted. Again.`,
+  (n: string) => `${n} announces layoffs, blames "market conditions"`,
+  (n: string) => `Rumor: ${n} in acquisition talks with SkyDisorder Corp`,
+  (n: string) => `${n} trending on Hacker News for all the wrong reasons`,
+  (n: string) => `Investors pull funding from ${n} after demo day disaster`,
+  (n: string) => `${n} achieves product-market fit. Nobody is sure what the product is.`,
+  (n: string) => `LEAKED: ${n} internal memo says "we have no idea what we're doing"`,
+  (n: string) => `${n} stock up 340% on news of absolutely nothing`,
+  (n: string) => `${n} CEO tweets "we're fine" — stock drops 12%`,
+  (n: string) => `Hot take from ${n}: "AI will replace golfers by 2027"`,
+  (n: string) => `${n} open-sourced their chaos engine. GitHub is confused.`,
+  (n: string) => `Board meeting at ${n} ended in a food fight. Productivity up 200%.`,
 ];
 
+function generateHeadlines() {
+  const events = getByRole('event');
+  const headlines: { source: string; text: string }[] = [];
+
+  for (const entity of events) {
+    const template = HEADLINE_TEMPLATES[Math.floor(Math.random() * HEADLINE_TEMPLATES.length)];
+    headlines.push({ source: entity.name, text: template(entity.name) });
+  }
+
+  for (let i = 0; i < 10; i++) {
+    const random = getRandomByRole('competitor') ?? getRandomByRole('sponsor');
+    if (random) {
+      const template = HEADLINE_TEMPLATES[Math.floor(Math.random() * HEADLINE_TEMPLATES.length)];
+      headlines.push({ source: random.name, text: template(random.name) });
+    }
+  }
+
+  for (let i = headlines.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [headlines[i], headlines[j]] = [headlines[j], headlines[i]];
+  }
+
+  return headlines;
+}
+
 export default function ChaosNewsFeed() {
+  const headlines = useMemo(() => generateHeadlines(), []);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [fade, setFade] = useState(true);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -34,7 +53,7 @@ export default function ChaosNewsFeed() {
     const interval = setInterval(() => {
       setFade(false);
       timeoutRef.current = setTimeout(() => {
-        setCurrentIdx((prev) => (prev + 1) % NEWS_ITEMS.length);
+        setCurrentIdx((prev) => (prev + 1) % headlines.length);
         setFade(true);
       }, 300);
     }, 5000);
@@ -42,9 +61,10 @@ export default function ChaosNewsFeed() {
       clearInterval(interval);
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, []);
+  }, [headlines.length]);
 
-  const item = NEWS_ITEMS[currentIdx];
+  const item = headlines[currentIdx];
+  if (!item) return null;
 
   return (
     <div style={{

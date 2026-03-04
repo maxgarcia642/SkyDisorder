@@ -100,8 +100,12 @@ export default function BugSquash({ onComplete }: Props) {
 
   const handleSquash = (id: number) => {
     if (result !== 'none') return;
-    setBugs(prev => prev.map(b => b.id === id && b.alive ? { ...b, alive: false } : b));
-    setSquashed(prev => prev + 1);
+    setBugs(prev => {
+      const bug = prev.find(b => b.id === id);
+      if (!bug || !bug.alive) return prev;
+      setSquashed(s => s + 1);
+      return prev.map(b => b.id === id ? { ...b, alive: false } : b);
+    });
   };
 
   const activeBugs = bugs.filter(b => b.spawned && b.alive);
