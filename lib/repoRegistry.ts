@@ -395,6 +395,28 @@ export const GAME_ENTITIES: GameEntity[] = [
   { id: 'yield-monitor', originalRepo: 'yield-monitor-main', name: 'Yield Monitor LLC', description: 'The model works on my machine', role: 'caddy', icon: '⚖️', rarity: 'uncommon' },
   { id: 'zmk-fourier', originalRepo: 'zmk-fourier-master', name: 'Keeb Config Collective', description: 'Config files as personality', role: 'equipment', icon: '🤖', rarity: 'uncommon' },
   { id: 'zmk-roadrunner', originalRepo: 'zmk-roadrunner-main', name: 'Split Keyboard Syndicate', description: 'ML predictions with confidence intervals of maybe', role: 'caddy', icon: '📰', rarity: 'uncommon' },
+  // Investor Satire Entities — parody investors from Ordinal/Breakground AI and Acres/AcreTrader backers
+  { id: 'breakground-satire', originalRepo: 'breakground-ai-parody', name: 'Breaking Artificial Glass and Running on Intelligent Ground', description: 'The AI company that breaks things and runs on hype. Series Z funding secured.', role: 'sponsor', icon: '🤖', rarity: 'legendary' },
+  { id: 'out-of-order-kiosk', originalRepo: 'ordinal-parody', name: 'Out-of-Order Kiosk', description: 'Your transaction failed. Please try again. And again. Forever.', role: 'hazard', icon: '🚫', rarity: 'epic' },
+  { id: 'flatlands-despair', originalRepo: 'flatlands-despair-vc', name: 'Flatlands Despair Venture', description: 'Midwest money with coastal expectations. They want 40% for strategic guidance.', role: 'sponsor', icon: '🌾', rarity: 'rare' },
+  { id: 'rps-international', originalRepo: 'wrps-parody', name: 'Winning Rock-Paper-Scissors Internationally', description: 'They always throw what beats you. Somehow. Every. Single. Time.', role: 'competitor', icon: '✊', rarity: 'rare' },
+  { id: 'money-printers-fund', originalRepo: 'money-printers-parody', name: 'Betting on Money Printers Fund', description: 'Long on inflation, short on your runway. BRRRRR.', role: 'sponsor', icon: '🖨️', rarity: 'epic' },
+  { id: 'lowing-down-well', originalRepo: 'well-parody', name: 'Lowing Down the Well', description: 'Your Series A fell down the well. Timmy is not coming back either.', role: 'hazard', icon: '🕳️', rarity: 'uncommon' },
+  { id: 'bent-over-county', originalRepo: 'benton-county-parody', name: 'Bent Down and Over County', description: 'Local government funding with strings attached to every limb.', role: 'hazard', icon: '🏛️', rarity: 'rare' },
+  { id: 'peanut-edge', originalRepo: 'peakspan-parody', name: 'Peanut Edge', description: 'Small fund, big allergies. Handle your term sheet carefully.', role: 'powerup', icon: '🥜', rarity: 'uncommon' },
+  { id: 'seesaw-shenanigans', originalRepo: 'seesaw-parody', name: 'Seesaw Shenanigans', description: 'Valuation goes up. Valuation goes down. Nobody knows why.', role: 'event', icon: '🎢', rarity: 'uncommon' },
+  { id: 'will-writing-ward', originalRepo: 'willard-parody', name: 'Will Writing Ward', description: 'Estate planning advice from someone who has never had an exit.', role: 'caddy', icon: '✍️', rarity: 'uncommon' },
+  { id: 'natural-disasters', originalRepo: 'natural-disasters-parody', name: 'Natural Disasters', description: 'Acts of God clause activated. Your cap table is now a crime scene.', role: 'hazard', icon: '🌪️', rarity: 'legendary' },
+  { id: 'late-questions', originalRepo: 'late-questions-parody', name: 'Late Questions', description: 'They ask the obvious after you have already shipped. Every time.', role: 'caddy', icon: '❓', rarity: 'common' },
+  { id: 'land-traitors', originalRepo: 'acretrader-parody', name: 'Land Traitors', description: 'They trade acres. You trade dignity. Same difference in Arkansas.', role: 'competitor', icon: '🏴‍☠️', rarity: 'epic' },
+  { id: 'body-aching', originalRepo: 'body-aching-parody', name: 'Body Aching', description: 'The physical toll of reading their investment memo. Consult a physician.', role: 'hazard', icon: '🤕', rarity: 'uncommon' },
+  { id: 'greeps-terra', originalRepo: 'greeps-terra-parody', name: "Greep's Terra Stakes", description: 'Terraforming your equity structure one dilution at a time.', role: 'sponsor', icon: '🌍', rarity: 'rare' },
+  { id: 'vance-thiel-syndicate', originalRepo: 'vance-thiel-parody', name: "Narnia's Vance-Thiel Dark Pool Syndicate", description: 'Through the wardrobe, past the lion, into the shadow banking dimension.', role: 'sponsor', icon: '🦁', rarity: 'legendary' },
+  { id: 'razor-blade-fund', originalRepo: 'w-family-parody', name: "W Family's Razor Blade Fund", description: 'The closer the shave, the more equity they take. First cut is free.', role: 'hazard', icon: '🪒', rarity: 'epic' },
+  { id: 'mess-reveling', originalRepo: 'mess-reveling-parody', name: 'Mess Reveling Partnership', description: 'They celebrate your chaos. Literally. There is a gala.', role: 'event', icon: '🎉', rarity: 'rare' },
+  { id: 'jumping-ship', originalRepo: 'jump-capital-parody', name: 'Jumping Ship Capitalism', description: 'Your lead investor just became your competitor lead investor. Mid-round.', role: 'event', icon: '🚢', rarity: 'uncommon' },
+  { id: 'misunderstood-anthill', originalRepo: 'a16z-parody', name: 'Misunderstood Anthill Group', description: 'Andreessen who? We are the REAL contrarian thinkers. Trust us.', role: 'sponsor', icon: '🐜', rarity: 'legendary' },
+  { id: 'revolting-seed', originalRepo: 'revolting-seed-parody', name: 'Revolting Seed Spreader Fund', description: 'Pre-seed funding that makes you wish you had stayed in the ground.', role: 'sponsor', icon: '🌱', rarity: 'common' },
 ];
 
 export const getByRole = (role: GameRole) => GAME_ENTITIES.filter(e => e.role === role);

@@ -17,25 +17,39 @@ Open `http://localhost:3000`.
 
 ## What's In v3.0
 
-### 384 Repos Integrated as Game Entities
+### 405 Entities Integrated as Game Characters
 
-Every single repo from the Sky Disorder folder is mapped to a satirical startup-themed game entity:
+Every repo from the Sky Disorder folder plus 21 satirical investor parodies are mapped to startup-themed game entities:
 
 | Role | Count | Purpose |
 |------|-------|---------|
 | Minigames | 25 | Playable game challenges |
-| Sponsors | 27 | Fund your startup |
+| Sponsors | 35 | Fund your startup (includes 8 parody VC firms) |
 | Employees | 44 | Hire them, increase burn rate |
-| Competitors | 14 | Rival startups gaining on you |
-| Hazards | 15 | Course obstacles that cost you money |
-| Powerups | 25 | Shop items with real gameplay effects |
-| Events | 20 | Random occurrences during gameplay |
+| Competitors | 16 | Rival startups gaining on you |
+| Hazards | 22 | Course obstacles that cost you money |
+| Powerups | 26 | Shop items with real gameplay effects |
+| Events | 23 | Random occurrences during gameplay |
 | Milestones | 33 | Achievements to unlock |
-| Caddies | 137 | AI advisors rotating tips |
+| Caddies | 139 | AI advisors rotating tips |
 | Courses | 16 | Background themes for the arcade |
 | Clubhouses | 2 | Full app showcases |
 | Trophies | 12 | Proof of completed projects |
 | Equipment | 14 | Unlockable dev tools |
+
+#### Investor Satire Entities (NEW)
+
+21 parody versions of real-world investors from Ordinal/Breakground AI and Acres/AcreTrader backers:
+
+- Breaking Artificial Glass and Running on Intelligent Ground (legendary sponsor)
+- Narnia's Vance-Thiel Dark Pool Syndicate (legendary sponsor)
+- Misunderstood Anthill Group (legendary sponsor)
+- Natural Disasters (legendary hazard)
+- Land Traitors (epic competitor)
+- Out-of-Order Kiosk (epic hazard)
+- W Family's Razor Blade Fund (epic hazard)
+- Betting on Money Printers Fund (epic sponsor)
+- And 13 more satirical VC/PE entities across sponsors, hazards, events, caddies, and powerups
 
 ### 20 Playable Minigames
 
@@ -58,7 +72,7 @@ Coffee Pour, Tactical Strike, Taste Radar, Snake, Number Guess, Real or Bot, Map
 - Random hazards from the registry can penalize your swing
 - Random events fire after swings (10% chance)
 - Sponsor Shop with real gameplay effects from registry powerups
-- AI Caddy rotates through 137+ advisors
+- AI Caddy rotates through 139+ advisors
 - Chaos News Feed generates headlines from event entities
 - 3 strikes and you're out
 
