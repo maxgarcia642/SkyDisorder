@@ -1,0 +1,15 @@
+{
+  "name": "SkyDisorder",
+  "revisionLabel": "Complete GP-8 variant systems and hand off for playtesting",
+  "description": "",
+  "mode": "Universal",
+  "exportDate": "2026-07-04T18:15:23.038Z",
+  "rosebudBuiltInSplash": {
+    "present": true,
+    "version": 1
+  },
+  "assetCount": 62,
+  "assetTypes": [
+    "image"
+  ]
+}
