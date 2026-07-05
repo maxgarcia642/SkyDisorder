@@ -1,4 +1,19 @@
-# SkyDisorder v3.0
+# SkyDisorder
+
+## `rosebud/` — The Quillhaven Build (current)
+
+The playable, buildless Canvas 2D game exported from Rosebud AI lives in
+[`rosebud/`](rosebud/): a single `main.js` (~11k lines) plus `index.html` and
+62 image assets. It contains the full Phase 4 satirical economy (Ledger,
+bureaucracy, pitches, reviews, pivots, spoons, footnotes, GP-8 variants) set in
+the fictional Ozark Ambition Corridor™. To play locally, serve the folder and
+open `index.html` (e.g. `npx serve rosebud`). To verify the build headlessly,
+run `node rosebud/verify-stub.mjs`. See `rosebud/BUILD_REPORT.md` for the full
+system census and the latest playtest-feedback changelog.
+
+---
+
+# SkyDisorder v3.0 (legacy Next.js prototype)
 
 **Breaking the ground with no land order at all. Try Google products like NotebookLM, Gemini, and their Labs #MayOrMayNotBeSponsored**
 
